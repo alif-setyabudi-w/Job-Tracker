@@ -1,0 +1,3 @@
+buatkan aplikasi dengan tema apply lamaran kerja yang didalamnya ada input nama perusahaan, posisi, diterima/ditolak/menunggu (defaultnya menunggu), dan unggah gambar (optional untuk melihat deskripsi lowongannya biar ga lupa), berikan tombol simpan yang akan menyimpan ke halman history, dan di history tambahkan tombol edit atau hapus per hasil simpannya. untuk penyimpanannya jadikan lokal/internal saja tidak perlu database.
+
+untuk tampilan coba buat yang menarik
