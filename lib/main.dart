@@ -364,7 +364,10 @@ class _ApplicationFormPageState extends State<ApplicationFormPage> {
                       children: [
                         Text(
                           isEditing ? 'Edit Lamaran' : 'Lamaran Kerja',
-                          style: const TextTheme().headlineMedium?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.w800,
                                 color: const Color(0xFF1D2433),
                               ),
@@ -675,12 +678,24 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   String _filter = 'Semua';
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filtered = _filter == 'Semua'
-        ? widget.records
-        : widget.records.where((item) => item.status == _filter).toList();
+    final query = _searchController.text.trim().toLowerCase();
+    final filtered = widget.records.where((item) {
+      final matchesStatus = _filter == 'Semua' || item.status == _filter;
+      final matchesQuery = query.isEmpty ||
+          item.company.toLowerCase().contains(query) ||
+          item.position.toLowerCase().contains(query);
+      return matchesStatus && matchesQuery;
+    }).toList();
 
     return SafeArea(
       child: Column(
@@ -701,10 +716,57 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${widget.records.length} lamaran tercatat',
+                  query.isEmpty
+                      ? '${widget.records.length} lamaran tercatat'
+                      : '${filtered.length} hasil ditemukan',
                   style: const TextStyle(color: Color(0xFF7C8494)),
                 ),
                 const SizedBox(height: 16),
+                TextField(
+                  controller: _searchController,
+                  onChanged: (_) => setState(() {}),
+                  textInputAction: TextInputAction.search,
+                  decoration: InputDecoration(
+                    hintText: 'Cari nama perusahaan atau posisi',
+                    hintStyle: const TextStyle(
+                      color: Color(0xFFA5ABBA),
+                      fontSize: 14,
+                    ),
+                    prefixIcon: const Icon(
+                      Icons.search_rounded,
+                      color: Color(0xFF8D94A5),
+                    ),
+                    suffixIcon: query.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: 'Hapus pencarian',
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.close_rounded),
+                          ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE4E7EF)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFE4E7EF)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF5B5CE2),
+                        width: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
@@ -758,17 +820,21 @@ class _HistoryPageState extends State<HistoryPage> {
                           ),
                         ),
                         const SizedBox(height: 14),
-                        const Text(
-                          'Belum ada lamaran',
-                          style: TextStyle(
+                        Text(
+                          widget.records.isEmpty
+                              ? 'Belum ada lamaran'
+                              : 'Tidak ada lamaran yang cocok',
+                          style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 4),
-                        const Text(
-                          'Lamaran yang disimpan akan tampil di sini',
-                          style: TextStyle(color: Color(0xFF9299A8)),
+                        Text(
+                          widget.records.isEmpty
+                              ? 'Lamaran yang disimpan akan tampil di sini'
+                              : 'Coba kata kunci atau filter status lain',
+                          style: const TextStyle(color: Color(0xFF9299A8)),
                         ),
                       ],
                     ),
